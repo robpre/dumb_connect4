@@ -23,6 +23,7 @@ char16_t board[HEIGHT][WIDTH] = {
 
 int col = 0;
 int colsize = 2;
+char player = 'o';
 
 void render_board() {
     system("clear");
@@ -33,6 +34,11 @@ void render_board() {
         printf(" ");
     }
     printf("V\n");
+    printf("%s ", prefix);
+    for (int i = 0; i < col * colsize; i++) {
+        printf(" ");
+    }
+    printf("%s\n", player);
     printf("%s_______________\n", prefix);
     for (int i = 0; i < HEIGHT; i++) {
         printf("%s|", prefix);
