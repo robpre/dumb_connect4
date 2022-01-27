@@ -12,41 +12,45 @@
 #define HEIGHT 6
 #define WIDTH 7
 
-char16_t board[HEIGHT][WIDTH] = {
-    {'_', '_', '_', '_', '_', '_', '_'},
-    {'_', '_', '_', '_', '_', '_', '_'},
-    {'_', '_', '_', '_', '_', '_', '_'},
-    {'_', '_', '_', '_', '_', '_', '_'},
-    {'_', '_', '_', '_', '_', '_', '_'},
-    {'_', '_', '_', '_', '_', '_', '_'},
+char board[HEIGHT][WIDTH] = {
+    {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+    {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+    {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+    {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+    {' ', ' ', ' ', ' ', ' ', ' ', ' '},
+    {' ', ' ', ' ', ' ', ' ', ' ', ' '},
 };
 
 int col = 0;
 int colsize = 2;
 char player = 'o';
-bool exit = false;
+int winner = -1;
+bool program_should_exit = false;
 
-void render_board() {
+void renderBoard() {
     // system("clear");
     char prefix[] = "\t  ";
 
+    // Print the column selector
     printf("%s ", prefix);
     for (int i = 0; i < col * colsize; i++) {
         printf(" ");
     }
     printf("V\n");
 
+    // print piece
     printf("%s ", prefix);
     for (int i = 0; i < col * colsize; i++) {
         printf(" ");
     }
     printf("%c\n", player);
 
+    // ascii art
     printf("%s_______________\n", prefix);
     for (int i = 0; i < HEIGHT; i++) {
         printf("%s|", prefix);
         for (int j = 0; j < WIDTH; j++) {
-            printf("%c|", board[i][j]);
+            printf("%c|", board[i][j] == ' ' ? '_' : board[i][j]);
         }
         printf("\n");
     }
@@ -62,7 +66,7 @@ void placePiece() {
     for (int i = HEIGHT; i >= 0; i--) {
         char target = board[i][col];
 
-        if (target == '_') {
+        if (target == ' ') {
             board[i][col] = player;
             break;
         }
@@ -71,29 +75,71 @@ void placePiece() {
     togglePlayer();
 }
 
-void checkWinner() {
+void checkWinner(int placedPieceX) {
+    int placedPieceY = 0;
     for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
-            char check = board[i][j];
+        char check = board[i][placedPieceX];
 
-            if (check != '_') {
-
-            }
+        if (check != ' ') {
+            placedPieceY = i;
+            break;
         }
+    }
+
+    char row[WIDTH];
+    char col[HEIGHT];
+    char forwardDiag[HEIGHT];
+    char backwardDiag[HEIGHT];
+
+    // ROW
+    for (int i = 0; i < WIDTH; i++) {
+        row[i] = board[placedPieceY][i];
+    }
+    // col
+    for (int i = 0; i < HEIGHT; i++) {
+        printf("col '%s'\n", col);
+        col[i] = board[i][placedPieceX];
+    }
+
+    printf("looking for '%s' in '%s'\n", "xxxx", row);
+    printf("looking for '%s' in '%s'\n", "xxxx", col);
+    if (strstr(row, "oooo") || strstr(col, "oooo")){
+        winner = 1;
+    }
+    if (strstr(row, "xxxx") || strstr(col, "xxxx")){
+        winner = 1;
     }
 }
 
+//        V
+//        x
+//   _______________
+//   |_|_|_|_|_|_|_|
+//   |_|_|_|_|_|_|_|
+//   |_|_|_|x|x|_|_|
+//   |_|_|_|x|o|o|_|
+//   |_|_|x|o|x|o|_|
+//   |_|x|o|o|o|x|_|
+//  /|=============|\
+// /-|-------------|-\
+
 int main() {
     int loops = 0;
-    int c;
+    int c, oldCol;
 
-    while (!exit) {
-        render_board();
+    while (!program_should_exit) {
+        renderBoard();
+
+        if (winner != -1) {
+            printf("player %i WINS!!!!!!!!!\n", winner);
+            break;
+        }
+
         c = getKey();
 
         switch (c) {
         case KEY_Esc:
-            exit = true;
+            program_should_exit = true;
             break;
         case KEY_Left:
             moveLeft();
@@ -102,10 +148,13 @@ int main() {
             moveRight();
             break;
         case KEY_Space:
+            oldCol = col;
             placePiece();
+            checkWinner(oldCol);
+            break;
         default:
             if (loops++ >= 10) {
-                exit = true;
+                program_should_exit = true;
             }
             break;
         }
