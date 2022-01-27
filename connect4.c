@@ -1,21 +1,16 @@
 #define _XOPEN_SOURCE 700
 #include <stdio.h>
 #include <string.h>
-#include <termios.h>
 #include <time.h>
-#include <stdlib.h>
 #include <uchar.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <errno.h>
+#include <stdlib.h>
 
-#define ECHOFLAGS (ECHO | ECHOE | ECHOK | ECHONL)
+#include "getkeys.h"
+
 #define HEIGHT 6
 #define WIDTH 7
-#define ESC 27
-#define LEFT 68
-#define RIGHT 67
-#define SPACE 32
 
 char16_t board[HEIGHT][WIDTH] = {
     {'_', '_', '_', '_', '_', '_', '_'},
@@ -29,8 +24,7 @@ char16_t board[HEIGHT][WIDTH] = {
 int col = 0;
 int colsize = 2;
 
-void render_board()
-{
+void render_board() {
     system("clear");
     char prefix[] = "\t  ";
 
@@ -51,47 +45,8 @@ void render_board()
     printf("\t/-|-------------|-\\\n");
 }
 
-int setDisplayMode(int fd, int option) {
-    int err;
-    struct termios term;
-    if (tcgetattr(fd, &term) == -1) {
-        perror("Cannot get the attribution of the terminal");
-        return 1;
-    }
-    if (option) {
-        term.c_lflag |= ECHOFLAGS;
-    } else {
-        term.c_lflag &= ~ECHOFLAGS;
-    }
-    err = tcsetattr(fd, TCSAFLUSH, &term);
-    if (err == -1 && err == EINTR) {
-        perror("Cannot set the attribution of the terminal");
-        return 1;
-    }
-    return 0;
-}
-
-int getKey() {
-    int c;
-    system("stty raw");
-    setDisplayMode(STDIN_FILENO, 0);
-    c = getchar();
-    system("stty cooked");
-    setDisplayMode(STDIN_FILENO, 1);
-
-    return c;
-}
-
-void moveRight() {
-    if (col < WIDTH) {
-        col++;
-    }
-}
-void moveLeft() {
-    if (col >= 0) {
-        col--;
-    }
-}
+void moveRight() { if (col < WIDTH - 1) { col++; } }
+void moveLeft() { if (col > 0) { col--; } }
 
 int main() {
     bool exit = false;
@@ -103,23 +58,20 @@ int main() {
         c = getKey();
 
         switch (c) {
-        case 3:
-        case ESC:
+        case KEY_Esc:
             exit = true;
             break;
-        case LEFT:
+        case KEY_Left:
             moveLeft();
             break;
-        case RIGHT:
+        case KEY_Right:
             moveRight();
             break;
         default:
-            if (loops++ >= 60) {
+            if (loops++ >= 10) {
                 exit = true;
             }
             break;
         }
-
-        printf("\nthe key %i\n", c);
     }
 }
