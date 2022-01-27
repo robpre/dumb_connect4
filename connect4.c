@@ -51,7 +51,7 @@ void render_board()
     printf("\t/-|-------------|-\\\n");
 }
 
-int set_disp_mode(int fd, int option) {
+int setDisplayMode(int fd, int option) {
     int err;
     struct termios term;
     if (tcgetattr(fd, &term) == -1) {
@@ -74,12 +74,23 @@ int set_disp_mode(int fd, int option) {
 int getKey() {
     int c;
     system("stty raw");
-    set_disp_mode(STDIN_FILENO, 0);
+    setDisplayMode(STDIN_FILENO, 0);
     c = getchar();
     system("stty cooked");
-    set_disp_mode(STDIN_FILENO, 1);
+    setDisplayMode(STDIN_FILENO, 1);
 
     return c;
+}
+
+void moveRight() {
+    if (col < WIDTH) {
+        col++;
+    }
+}
+void moveLeft() {
+    if (col >= 0) {
+        col--;
+    }
 }
 
 int main() {
@@ -95,6 +106,12 @@ int main() {
         case 3:
         case ESC:
             exit = true;
+            break;
+        case LEFT:
+            moveLeft();
+            break;
+        case RIGHT:
+            moveRight();
             break;
         default:
             if (loops++ >= 60) {
