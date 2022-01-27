@@ -69,6 +69,8 @@ enum KeyCode getKey() {
             }
         case CTRL_C:
             return KEY_Esc;
+        case C_SPACE:
+            return KEY_Space;
         default:
             return KEY_Unknown;
     }
