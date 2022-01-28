@@ -99,6 +99,42 @@ void printArr(char arr[], int size) {
         printf("%c", arr[i]);
     }
 }
+        // 1, 0
+        // 2, 1
+        // 3, 2
+        //      V
+        //      x
+        //   _______________
+        //   |_|x|_|_|_|_|_|
+        //   |_|_|x|_|_|_|_|
+        //   |_|_|_|x|_|_|_|
+        //   |_|_|_|_|x|_|_|
+        //   |_|_|_|_|_|x|_|
+        //   |_|_|_|_|_|_|x|
+        //  /|=============|\
+        // /-|-------------|-\
+
+
+        // -2, -3
+        // -1, -2
+        // 0, -1
+        // 1, 0
+        // 2, 1
+        // 3, 2
+        // 4, 3
+        // 5, 4
+        // 6, 5
+        //          V
+        //          x
+        //   _______________
+        //   |_|x|_|_|_|_|_|
+        //   |_|_|x|_|_|_|_|
+        //   |_|_|_|x|_|_|_|
+        //   |_|_|_|_|x|_|_|
+        //   |_|_|_|_|_|x|_|
+        //   |_|_|_|_|_|_|x|
+        //  /|=============|\
+        // /-|-------------|-\
 
 void checkWinner(int x, int y) {
     char row[WIDTH];
@@ -106,27 +142,43 @@ void checkWinner(int x, int y) {
     char forwardDiag[HEIGHT];
     char backwardDiag[HEIGHT];
 
-    // ROW
-    for (int i = 0; i < WIDTH; i++) {
-        row[i] = mapState(board[y][i]);
-    }
     // col
-    for (int j = 0; j < HEIGHT; j++) {
-        col[j] = mapState(board[j][x]);
+    for (int i = 0; i < HEIGHT; i++) {
+        col[i] = mapState(board[i][x]);
+    }
+    // ROW
+    for (int j = 0; j < WIDTH; j++) {
+        row[j] = mapState(board[y][j]);
     }
 
-    printf("row: ");
-    printArr(row, WIDTH);
-    printf("\t looking for contiguos values\n");
+    int topMin = y - HEIGHT;
+    int topMax = y + HEIGHT;
+    int startXBackwards = x - HEIGHT;
+    int startXForwards = x + HEIGHT;
+    int offset = 0;
+    int forwardsI = 0;
+    int backwardsI = 0;
+    for (int dy = topMin; dy < topMax; dy++, offset++) {
+        int dxForwards = startXForwards - offset;
+        int dxBackwards = startXBackwards + offset;
+        if (dy >= 0 && dy < HEIGHT)
+        {
+            if (dxForwards >= 0 && dxForwards < WIDTH)
+                forwardDiag[forwardsI++] = mapState(board[dy][dxForwards]);
+            if (dxBackwards >= 0 && dxBackwards < WIDTH)
+                backwardDiag[backwardsI++] = mapState(board[dy][dxBackwards]);
+        }
+    }
 
-    printf("col: ");
-    printArr(col, HEIGHT);
-    printf("\t looking for contiguos values\n");
+    // Fill arrays with empty values
+    while(forwardsI < HEIGHT) forwardDiag[forwardsI++] = ' ';
+    while(backwardsI < HEIGHT) backwardDiag[backwardsI++] = ' ';
 
-    if (strstr(row, "oooo") || strstr(col, "oooo")){
+    if (strstr(row, "oooo") || strstr(col, "oooo") || strstr(forwardDiag, "oooo") || strstr(backwardDiag, "oooo"))
+    {
         winner = STATE_Player1;
     }
-    if (strstr(row, "xxxx") || strstr(col, "xxxx")){
+    if (strstr(row, "xxxx") || strstr(col, "xxxx") || strstr(forwardDiag, "xxxx") || strstr(backwardDiag, "xxxx")){
         winner = STATE_Player2;
     }
 }
